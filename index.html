@@ -19,6 +19,7 @@
     // unavailable; the normal live request always gets the first chance.
     (() => {
       const nativeFetch = window.fetch.bind(window);
+      const apiBase = 'https://ciberandy-stockpicker-api.onrender.com';
       const demoResponse = (input) => {
         const url = String(input);
         const match = url.match(/[?&]symbol=([^&]+)/) || url.match(/chart\/([^?]+)/);
@@ -33,11 +34,16 @@
         return new Response(JSON.stringify({chart:{result:[{meta:{currency:'EUR',shortName:`${symbol} · Demo-Daten`},timestamp,indicators:{quote:[{close}]}}]}}), {status:200, headers:{'Content-Type':'application/json'}});
       };
       window.fetch = async (input, init) => {
+        const originalUrl = String(input);
+        const yahooMatch = originalUrl.match(/chart\/([^?]+)/);
+        const requestInput = apiBase && yahooMatch
+          ? `${apiBase}/api/history?symbol=${encodeURIComponent(decodeURIComponent(yahooMatch[1]))}`
+          : input;
         try {
-          const response = await nativeFetch(input, init);
+          const response = await nativeFetch(requestInput, init);
           if (response.ok) return response;
         } catch (_) {}
-        return demoResponse(input);
+        return demoResponse(originalUrl);
       };
     })();
   </script>

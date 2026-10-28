@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: ciberandy-stockpicker-api
+    runtime: python
+    plan: free
+    buildCommand: "python --version"
+    startCommand: "python server.py"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.3"

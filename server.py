@@ -144,7 +144,14 @@ class Handler(SimpleHTTPRequestHandler):
 
     def end_headers(self):
         self.send_header("Cache-Control", "no-store, max-age=0")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
         super().end_headers()
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.end_headers()
 
     def do_GET(self):
         parsed = urlparse(self.path)
@@ -188,6 +195,7 @@ class Handler(SimpleHTTPRequestHandler):
         super().do_GET()
 
 if __name__ == "__main__":
-    port = int(os.environ.get("SIGNALLAB_PORT", "8765"))
-    print(f"StockPicker by Andreas Metzner {APP_VERSION}: http://localhost:{port}/index.html")
-    ThreadingHTTPServer(("127.0.0.1", port), Handler).serve_forever()
+    port = int(os.environ.get("PORT") or os.environ.get("SIGNALLAB_PORT", "8765"))
+    host = os.environ.get("HOST", "0.0.0.0")
+    print(f"StockPicker by Andreas Metzner {APP_VERSION}: http://{host}:{port}/index.html")
+    ThreadingHTTPServer((host, port), Handler).serve_forever()
