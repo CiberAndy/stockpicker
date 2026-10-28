@@ -13,6 +13,34 @@
     .chart-wrap{height:365px;position:relative}.chart-wrap canvas{width:100%;height:100%;display:block}.legend{display:flex;gap:15px;flex-wrap:wrap;color:var(--muted);font-size:11px;margin-top:8px}.legend i{width:9px;height:3px;display:inline-block;vertical-align:middle;margin-right:4px;border-radius:4px}.signal-list{display:grid;gap:10px}.signal{background:#0b192b;border:1px solid var(--line);border-radius:13px;padding:13px;display:grid;grid-template-columns:1fr auto;gap:4px}.signal .name{font-weight:800}.signal .meta{font-size:12px;color:var(--muted)}.signal .reason{grid-column:1/-1;color:#c4d2e4;font-size:12px;margin-top:3px}.table{width:100%;border-collapse:collapse}.table th{color:var(--muted);font-weight:600;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em}.table td,.table th{padding:11px 8px;border-bottom:1px solid #1b3048}.table tr:last-child td{border:0}.market-chip{color:#a9caff;background:#143054;border-radius:5px;padding:3px 6px;font-size:11px}.note{margin-top:14px;padding:12px;border-left:3px solid var(--gold);background:#1f1b10;color:#d8cfa9;font-size:12px;border-radius:5px}.wide{grid-column:1/-1}.footer{color:#7187a2;font-size:11px;margin-top:20px}.disabled{opacity:.5;pointer-events:none}@media(max-width:900px){.shell{padding:20px 16px}.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}.actions{margin-left:0;width:100%}.actions>*{flex:1}}
   </style>
 <style>.chart-wrap{overflow:visible}.chart-wrap canvas{cursor:crosshair;touch-action:none}.chart-wrap canvas:active{cursor:crosshair}.chart-hint{color:var(--muted);font-size:10px;margin-top:6px;line-height:1.35}.legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap;line-height:1.8;min-height:24px}.zoom-controls{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px}.zoom-controls .button{height:30px;padding:0 10px;font-size:12px}</style>
+  <script>
+    // GitHub Pages is static and cannot run the local Python proxy. Keep the
+    // app usable there by supplying deterministic demo data when live data is
+    // unavailable; the normal live request always gets the first chance.
+    (() => {
+      const nativeFetch = window.fetch.bind(window);
+      const demoResponse = (input) => {
+        const url = String(input);
+        const match = url.match(/[?&]symbol=([^&]+)/) || url.match(/chart\/([^?]+)/);
+        const symbol = decodeURIComponent(match?.[1] || 'DEMO');
+        const now = Math.floor(Date.now() / 3600000) * 3600;
+        const points = 780;
+        const timestamp = Array.from({length: points}, (_, i) => now - (points - 1 - i) * 3600);
+        const close = timestamp.map((_, i) => {
+          const base = 85 + i * 0.018;
+          return Number((base + Math.sin(i / 17) * 3.2 + Math.sin(i / 43) * 5.1).toFixed(2));
+        });
+        return new Response(JSON.stringify({chart:{result:[{meta:{currency:'EUR',shortName:`${symbol} · Demo-Daten`},timestamp,indicators:{quote:[{close}]}}]}}), {status:200, headers:{'Content-Type':'application/json'}});
+      };
+      window.fetch = async (input, init) => {
+        try {
+          const response = await nativeFetch(input, init);
+          if (response.ok) return response;
+        } catch (_) {}
+        return demoResponse(input);
+      };
+    })();
+  </script>
 </head>
 <body>
   <main class="shell">
