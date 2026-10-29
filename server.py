@@ -176,9 +176,28 @@ class Handler(SimpleHTTPRequestHandler):
             if not symbol or len(symbol) > 40 or any(c not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.-_^=" for c in symbol):
                 self.send_error(400, "Ungueltiges Symbol")
                 return
-            url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range=2y&interval=1h&events=history&includeAdjustedClose=true"
+            urls = [
+                f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range=2y&interval=1h&events=history&includeAdjustedClose=true",
+                f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range=2y&interval=1d&events=history&includeAdjustedClose=true",
+            ]
             try:
-                body = fetch_yahoo(url)
+                last_error = None
+                body = None
+                for url in urls:
+                    try:
+                        candidate = fetch_yahoo(url)
+                        payload = json.loads(candidate.decode("utf-8"))
+                        result = (payload.get("chart") or {}).get("result") or []
+                        quote = (result[0].get("indicators") or {}).get("quote") or [] if result else []
+                        closes = (quote[0].get("close") or []) if quote else []
+                        if sum(value is not None for value in closes) >= 20:
+                            body = candidate
+                            break
+                        last_error = RuntimeError("Yahoo lieferte keine ausreichenden Kursdaten")
+                    except Exception as exc:
+                        last_error = exc
+                if body is None:
+                    raise last_error or RuntimeError("Keine Kursdaten verfügbar")
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json; charset=utf-8")
                 self.send_header("Cache-Control", "no-store")
@@ -186,11 +205,11 @@ class Handler(SimpleHTTPRequestHandler):
                 self.wfile.write(body)
             except Exception as exc:
                 print(f"Yahoo-Abruf fehlgeschlagen: {exc!r}")
-                payload = json.dumps({"error": str(exc)}).encode("utf-8")
+                error_payload = json.dumps({"error": str(exc)}).encode("utf-8")
                 self.send_response(502)
                 self.send_header("Content-Type", "application/json; charset=utf-8")
                 self.end_headers()
-                self.wfile.write(payload)
+                self.wfile.write(error_payload)
             return
         super().do_GET()
 
