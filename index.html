@@ -68,7 +68,7 @@
     <div class="footer">Echte 1-Stunden-Kurse über Yahoo Finance. Start: im Ausgabeordner <code>py server.py</code> ausführen und danach <code>http://localhost:8765/index.html</code> öffnen. Keine Anlageberatung.</div>
   </main>
   <script>
-    const groups={depot:[['RM8U.DE','Physical Gold USD (Acc)'],['XAIX.DE','AI & Big Data USD (Acc)'],['GOOGL','Alphabet (A)'],['ORCL','Oracle'],['EUNL.DE','Core MSCI World USD (Acc)'],['BMW.DE','BMW'],['TSM','TSMC (ADR)'],['EUNK.DE','Core MSCI Europe EUR (Acc)'],['TUI1.DE','TUI (AG)'],['1211.HK','BYD'],['HDD.DE','Heidelberger Druckmaschinen']]};
+    const groups={depot:[['PPFB.DE','Physical Gold ETC (PPFB)'],['XAIX.DE','AI & Big Data USD (Acc)'],['GOOGL','Alphabet (A)'],['ORCL','Oracle'],['EUNL.DE','Core MSCI World USD (Acc)'],['BMW.DE','BMW'],['TSM','TSMC (ADR)'],['EUNK.DE','Core MSCI Europe EUR (Acc)'],['TUI1.DE','TUI (AG)'],['1211.HK','BYD'],['HDD.DE','Heidelberger Druckmaschinen']]};
     const state={series:[],fast:20,slow:50,mode:'SMA',symbol:'',name:'',dates:[],lastClose:null,previousClose:null,custom:false,barsPerTradingDay:1}; const chartView={xZoom:1,yZoom:1,xPan:.5,yPan:.5}; let loadSequence=0;
     const $=id=>document.getElementById(id)||{textContent:'',innerHTML:'',className:'',value:'',style:{}}; const fmt=n=>n.toLocaleString('de-DE',{style:'currency',currency:'EUR',minimumFractionDigits:2,maximumFractionDigits:2});
     function params(){const v=$('strategy').value; return v==='ema921'?{fast:9,slow:21,mode:'EMA'}:v==='sma50200'?{fast:50,slow:200,mode:'SMA'}:v==='sma520'?{fast:5,slow:20,mode:'SMA'}:{fast:20,slow:50,mode:'SMA'}}
